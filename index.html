@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NetQuiz</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#eceff3;--sf:#fff;--tx:#10151d;--mu:#667085;--bd:#d9dee6;--ac:#0e6b6b;--acx:#fff;--tm:#10151d;--tmx:#ffb800;--ok:#13804a;--er:#c62828;--okb:#e5f5ec;--erb:#fdeaea;
+--num:"Barlow Condensed","Arial Narrow",Impact,sans-serif;--sans:Barlow,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1117;--sf:#161c25;--tx:#e8ecf2;--mu:#93a0b2;--bd:#273040;--ac:#3fc1c1;--acx:#06201f;--tm:#05080c;--ok:#4cd68a;--er:#ff7b7b;--okb:#10301f;--erb:#3b1c1c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0d1117;--sf:#161c25;--tx:#e8ecf2;--mu:#93a0b2;--bd:#273040;--ac:#3fc1c1;--acx:#06201f;--tm:#05080c;--ok:#4cd68a;--er:#ff7b7b;--okb:#10301f;--erb:#3b1c1c;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;height:100%;background:var(--bg);color:var(--tx);font:16px/1.5 var(--sans)}
+.app{display:flex;height:100%}
+nav{width:190px;flex:none;background:var(--sf);border-right:1px solid var(--bd);padding:20px 12px;display:flex;flex-direction:column;gap:4px}
+.logo{font:700 28px/1 var(--num);letter-spacing:.5px;padding:0 10px 16px}
+.logo i{font-style:normal;color:var(--ac)}
+nav a{color:var(--tx);text-decoration:none;padding:10px 12px;border-radius:8px;font-weight:500}
+nav a:hover{background:var(--bg)}
+nav a.on{background:var(--ac);color:var(--acx)}
+main{flex:1;overflow:auto;padding:28px;min-width:0}
+.pg{max-width:880px;margin:0 auto}
+h1{font:700 40px/1.1 var(--num);margin:0 0 6px;letter-spacing:.3px}
+h2{font:700 24px/1.2 var(--num);margin:0 0 10px}
+.mu{color:var(--mu)}
+p{margin:0 0 16px;max-width:62ch}
+.btn{font:600 16px var(--sans);background:var(--ac);color:var(--acx);border:0;border-radius:10px;padding:11px 20px;cursor:pointer;text-decoration:none;display:inline-block}
+.btn.ghost{background:transparent;color:var(--tx);border:1px solid var(--bd)}
+.btn.big{padding:15px 36px;font-size:19px;margin-top:8px}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.seg{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.seg button{font:500 15px var(--sans);padding:9px 16px;border-radius:999px;border:1px solid var(--bd);background:var(--sf);color:var(--tx);cursor:pointer}
+.seg button.on{background:var(--tx);color:var(--bg);border-color:var(--tx)}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:18px;margin:0 0 16px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+td,th{padding:6px 8px;text-align:left;border-bottom:1px solid var(--bd);font-weight:500}
+th{color:var(--mu);font-size:14px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:16px;background:var(--tm);color:#fff;border-radius:14px;padding:16px 22px;margin:0 0 16px;flex-wrap:wrap}
+.ip{font:700 clamp(30px,6vw,46px)/1 var(--num);letter-spacing:.5px}
+.ip span{color:var(--tmx)}
+.top small{color:#9aa6b6;font-size:14px}
+.timer{font:700 clamp(40px,9vw,64px)/1 var(--num);color:var(--tmx);font-variant-numeric:tabular-nums}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin:0 0 16px}
+.f{display:flex;flex-direction:column;gap:4px;padding:10px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--sf);font-size:14px;color:var(--mu)}
+.f.ok{border-color:var(--ok);background:var(--okb)}
+.f.bad{border-color:var(--er);background:var(--erb)}
+input{font:16px var(--mono);padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);width:100%}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:0 0 16px}
+.rank{font:700 40px/1 var(--num);margin-bottom:6px}
+.good{color:var(--ok);font-weight:600}
+.pen{color:var(--er);font-weight:600}
+.q{font:700 clamp(64px,16vw,120px)/1 var(--num);text-align:center;margin:10px 0;font-variant-numeric:tabular-nums;letter-spacing:2px}
+.bi{max-width:420px;margin:0 auto;display:block;text-align:center;font-size:28px;padding:12px}
+.rv{margin:0 0 16px}
+.rv details{background:var(--sf);border:1px solid var(--bd);border-radius:10px;margin:0 0 8px;padding:0 14px}
+.rv summary{cursor:pointer;padding:11px 0;font-weight:600}
+.rv details[open] summary{border-bottom:1px solid var(--bd);margin-bottom:10px}
+.rv ol,.rv ul{margin:0 0 12px;padding-left:20px}
+.rv li{margin:3px 0}
+.rv p{margin:0 0 10px}
+.rv code,.eg{font-family:var(--mono);font-size:14px;background:var(--bg);padding:1px 6px;border-radius:5px}
+.eg{display:block;padding:10px 12px;margin:0 0 12px;line-height:1.7}
+.tw{overflow-x:auto;margin:0 0 12px}
+.bits{display:flex;gap:6px;justify-content:center;margin:12px 0}
+.bt{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;max-width:64px;padding:8px 0;border-radius:10px;border:1px solid var(--bd);background:var(--sf);color:var(--tx);cursor:pointer;font:600 14px var(--mono)}
+.bt b{font:700 28px/1 var(--num)}
+.bt.on{background:var(--tm);color:var(--tmx);border-color:var(--tm)}
+.shake{animation:sh .25s}
+@keyframes sh{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@media (max-width:700px){.app{flex-direction:column}nav{width:auto;flex-direction:row;border-right:0;border-bottom:1px solid var(--bd);padding:10px;align-items:center;overflow-x:auto}.logo{padding:0 10px 0 4px;font-size:24px}main{padding:18px 14px}}
+@media (prefers-reduced-motion:reduce){.shake{animation:none}}
+</style>
+</head>
+<body>
+<div class="app">
+<nav><div class="logo">Net<i>Quiz</i></div><a href="#home" data-p="home">Home</a><a href="#subnet" data-p="subnet">Subnet</a><a href="#binary" data-p="binary">Binary</a></nav>
+<main id="main"></main>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+const E=(t,c)=>{const e=document.createElement(t);if(c)e.className=c;return e};
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+let S={sub:{},bin:{}};
+try{S=JSON.parse(localStorage.getItem('netquiz1'))||S}catch(e){}
+S.sub=S.sub||{};S.bin=S.bin||{};
+const save=()=>{try{localStorage.setItem('netquiz1',JSON.stringify(S))}catch(e){}};
+const fmt=ms=>{const t=Math.max(0,Math.floor(ms/100)),m=Math.floor(t/600),s=Math.floor(t%600/10);return m+':'+String(s).padStart(2,'0')+'.'+t%10};
+const norm=v=>String(v).replace(/[\s,]/g,'').toUpperCase();
+const dot=n=>[n>>>24,n>>>16&255,n>>>8&255,n&255].join('.');
+
+/* ---------- Subnet data ---------- */
+const CL={A:{n:126,h:16777214,d:8,lo:1,hi:126},B:{n:16384,h:65534,d:16,lo:128,hi:191},C:{n:2097152,h:254,d:24,lo:192,hi:223}};
+const TIERS={easy:{c:'C',name:'Easy',sub:'Class C',pro:45,ok:90},medium:{c:'B',name:'Medium',sub:'Class B',pro:75,ok:150},hard:{c:'A',name:'Hard',sub:'Class A',pro:105,ok:200}};
+const F=[['cls','Class (A, B or C)'],['cn','Networks in this class'],['ch','Hosts per network in this class'],['mask','Subnet mask'],['net','Network address'],['f','First usable host'],['l','Last usable host'],['bc','Broadcast address'],['h','Usable hosts per subnet'],['sn','Subnets from the classful network']];
+const PEN=5000;
+
+function gen(tier){
+  const c=TIERS[tier].c,k=CL[c],p=rnd(k.d+1,30),mask=(0xFFFFFFFF<<(32-p))>>>0;
+  let ip,net,bc;
+  do{ip=((rnd(k.lo,k.hi)<<24)|(rnd(0,255)<<16)|(rnd(0,255)<<8)|rnd(0,255))>>>0;net=(ip&mask)>>>0;bc=(net|~mask)>>>0}while(ip===net||ip===bc);
+  return{ip:dot(ip),p,a:{cls:c,cn:String(k.n),ch:String(k.h),mask:dot(mask),net:dot(net),bc:dot(bc),f:dot(net+1),l:dot(bc-1),h:String(2**(32-p)-2),sn:String(2**(p-k.d))}};
+}
+
+/* ---------- Review content ---------- */
+function reviewSub(){return`
+<details open><summary>Class A, B and C at a glance</summary>
+<div class="tw"><table><tr><th>Class</th><th>First octet</th><th>Default mask</th><th>Networks</th><th>Hosts per network</th></tr>
+<tr><td>A</td><td>1 to 126</td><td>255.0.0.0 (/8)</td><td>126</td><td>16,777,214</td></tr>
+<tr><td>B</td><td>128 to 191</td><td>255.255.0.0 (/16)</td><td>16,384</td><td>65,534</td></tr>
+<tr><td>C</td><td>192 to 223</td><td>255.255.255.0 (/24)</td><td>2,097,152</td><td>254</td></tr></table></div>
+<p>Class A starts with bit <code>0</code>, B with <code>10</code>, C with <code>110</code>. Those fixed bits explain the networks count: A has 7 free network bits (2<sup>7</sup> minus 2 = 126), B has 14 (2<sup>14</sup> = 16,384), C has 21 (2<sup>21</sup> = 2,097,152). Hosts per network are 2<sup>host bits</sup> minus 2: A has 24 host bits, B has 16, C has 8.</p>
+<p class="mu">127.x.x.x is loopback and 224 and above is multicast or experimental, so neither appears in the quiz.</p></details>
+<details><summary>How to determine the class</summary>
+<p>Look only at the <b>first octet</b>.</p><ul><li>1 to 126: Class A</li><li>128 to 191: Class B</li><li>192 to 223: Class C</li></ul>
+<div class="eg">172.16.45.200: first octet is 172, so Class B</div>
+<p>Running example for the steps below: <code>172.16.45.200/20</code></p></details>
+<details><summary>Subnet mask</summary>
+<ol><li>The prefix is how many bits are 1. Split it into 8s: /20 = 8 + 8 + 4.</li><li>Every full group of 8 is <code>255</code>. Groups after the last 1 are <code>0</code>.</li><li>The leftover bits give the partial octet: 1 bit = 128, 2 = 192, 3 = 224, 4 = 240, 5 = 248, 6 = 252, 7 = 254.</li></ol>
+<div class="eg">/20 = 8 + 8 + 4, so 255.255.240.0</div></details>
+<details><summary>Network address</summary>
+<ol><li>Find the <b>interesting octet</b>: the one in the mask that is not 255 or 0 (here the third, 240).</li><li>Block size = 256 minus the mask value: 256 &minus; 240 = 16.</li><li>In that octet, take the largest multiple of the block size that is not above the IP value. Octets before it are copied, octets after it become 0.</li></ol>
+<div class="eg">Third octet is 45. Multiples of 16: 0, 16, 32, 48. The largest not above 45 is 32.
+Network address: 172.16.32.0</div></details>
+<details><summary>First usable host</summary>
+<p>Network address plus 1 in the last octet.</p><div class="eg">172.16.32.0 + 1 = 172.16.32.1</div></details>
+<details><summary>Broadcast address</summary>
+<ol><li>Next network starts at network + block size in the interesting octet (32 + 16 = 48).</li><li>The broadcast is one below that: subtract 1 from the interesting octet, and set every octet after it to 255.</li></ol>
+<div class="eg">48 &minus; 1 = 47 in the third octet, then 255 for the last.
+Broadcast: 172.16.47.255</div></details>
+<details><summary>Last usable host</summary>
+<p>Broadcast minus 1 in the last octet.</p><div class="eg">172.16.47.255 &minus; 1 = 172.16.47.254</div></details>
+<details><summary>Usable hosts per subnet</summary>
+<ol><li>Host bits = 32 minus the prefix.</li><li>Usable hosts = 2<sup>host bits</sup> minus 2 (the network and broadcast addresses).</li></ol>
+<div class="eg">/20: 32 &minus; 20 = 12 host bits. 2<sup>12</sup> = 4096. 4096 &minus; 2 = 4094</div>
+<p class="mu">Powers of 2: 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536.</p></details>
+<details><summary>Subnets from the classful network</summary>
+<ol><li>Count how many bits you borrowed: prefix minus the class default (8, 16 or 24).</li><li>Subnets = 2<sup>borrowed bits</sup>.</li></ol>
+<div class="eg">Class B default is /16. /20 &minus; /16 = 4 borrowed bits. 2<sup>4</sup> = 16 subnets</div></details>`}
+function reviewBin(){return`
+<details open><summary>The 8-bit place chart</summary>
+<p>Every bit has a fixed value, from left to right: <code>128 64 32 16 8 4 2 1</code>. Picture each bit as a finger: up is 1, down is 0. Tap the bits to try it.</p>
+<div class="bits" id="bits">${[128,64,32,16,8,4,2,1].map(v=>`<button class="bt" data-v="${v}"><span>${v}</span><b>0</b></button>`).join('')}</div>
+<div style="text-align:center"><span class="rank" id="bd">0</span> <span class="mu">=</span> <span class="rank" id="bb">00000000</span></div></details>
+<details><summary>Binary to decimal: add the fingers that are up</summary>
+<div class="eg">10110101 has 1s under 128, 32, 16, 4 and 1.
+128 + 32 + 16 + 4 + 1 = 181</div></details>
+<details><summary>Decimal to binary: subtract left to right</summary>
+<p>Go through 128, 64, 32, 16, 8, 4, 2, 1. If the value fits in what is left, write 1 and subtract it. If not, write 0.</p>
+<div class="eg">181: 128 fits (1), 53 left
+64 no (0). 32 fits (1), 21 left. 16 fits (1), 5 left
+8 no (0). 4 fits (1), 1 left. 2 no (0). 1 fits (1)
+Result: 10110101</div></details>
+<details><summary>Shortcuts</summary>
+<ul><li><b>Nibbles:</b> split into two groups of 4 with values 8 4 2 1. 1011 = 11 and 0101 = 5, so 11 &times; 16 + 5 = 181.</li>
+<li><b>Single 1:</b> a lone 1 is just its place value. 00001000 = 8.</li>
+<li><b>Flip trick:</b> all ones is 255. Flipping every bit means 255 minus the number. 181 is 10110101, so 74 is 01001010.</li>
+<li><b>Odd or even:</b> the last bit is 1 only for odd numbers.</li>
+<li><b>Mask values:</b> 10000000 = 128, 11000000 = 192, 11100000 = 224, 11110000 = 240, 11111000 = 248, 11111100 = 252, 11111110 = 254, 11111111 = 255.</li></ul></details>`}
+function bindBits(){const w=$('#bits');if(!w)return;const up=()=>{let d=0,s='';w.querySelectorAll('.bt').forEach(b=>{const on=b.classList.contains('on');if(on)d+=+b.dataset.v;s+=on?1:0;b.querySelector('b').textContent=on?1:0});$('#bd').textContent=d;$('#bb').textContent=s};w.querySelectorAll('.bt').forEach(b=>b.onclick=()=>{b.classList.toggle('on');up()})}
+const toggleRv=()=>{const r=$('#rv');r.hidden=!r.hidden;$('#rvb').textContent=r.hidden?'Review':'Hide review'};
+
+/* ---------- Pages ---------- */
+function home(m){
+  const r=E('div','pg');
+  const sub=Object.keys(TIERS).map(t=>{const x=S.sub[t]||{};return`<tr><td>${TIERS[t].name} (${TIERS[t].sub})</td><td>${x.best!=null?fmt(x.best):'–'}</td></tr>`}).join('');
+  const MN={d2b:'Decimal → Binary',b2d:'Binary → Decimal',mix:'Mixed'};
+  const bin=Object.keys(MN).map(k=>`<tr><td>${MN[k]}</td>${[30,60,120,180].map(d=>`<td>${S.bin[k+'-'+d]??'–'}</td>`).join('')}</tr>`).join('');
+  r.innerHTML=`<h1>NetQuiz</h1><p class="mu">Race the clock until subnetting is reflex.</p>
+  <div class="cards"><div class="card"><h2>Subnet</h2><p class="mu">Best time per full subnetting set.</p><table><tr><th>Level</th><th>Best</th></tr>${sub}</table><p></p><a class="btn" href="#subnet">Play subnet</a></div>
+  <div class="card"><h2>Binary</h2><p class="mu">Most correct answers in the time limit.</p><table><tr><th></th><th>30s</th><th>1m</th><th>2m</th><th>3m</th></tr>${bin}</table><p></p><a class="btn" href="#binary">Play binary</a></div></div>`;
+  m.append(r);
+}
+
+function subnet(m){
+  let tier='easy',tick=null;
+  const root=E('div','pg');m.append(root);
+  function menu(){
+    clearInterval(tick);
+    root.innerHTML=`<h1>Subnet</h1><p class="mu">One set is one full subnetting exam on a single address. Questions stay hidden until you start. Every wrong field adds 5 seconds, and the clock stops only when all ten fields are correct.</p>
+    <div class="seg">${Object.keys(TIERS).map(t=>`<button data-t="${t}">${TIERS[t].name} · ${TIERS[t].sub}</button>`).join('')}</div>
+    <div class="card" id="info"></div><div class="row"><button class="btn big" id="go">Start</button><button class="btn big ghost" id="rvb">Review</button></div><div class="rv" id="rv" hidden>${reviewSub()}</div>`;
+    $('#rvb').onclick=toggleRv;
+    const draw=()=>{root.querySelectorAll('[data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===tier));
+      const r=S.sub[tier]||{},h=r.hist||[],T=TIERS[tier];
+      $('#info').innerHTML=`Best: <b>${r.best!=null?fmt(r.best):'–'}</b><br>Average of last ${h.length}: <b>${h.length?fmt(h.reduce((a,b)=>a+b,0)/h.length):'–'}</b><br><span class="mu">Pro under ${T.pro}s. Solid under ${T.ok}s.</span>`};
+    root.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{tier=b.dataset.t;draw()});
+    draw();$('#go').onclick=start;
+  }
+  function start(){
+    const q=gen(tier);let pen=0,solved=0;const t0=performance.now();
+    root.innerHTML=`<div class="top"><div><small>${TIERS[tier].name}</small><div class="ip">${q.ip}<span>/${q.p}</span></div></div><div class="timer" id="tm">0:00.0</div></div>
+    <div class="grid" id="fg">${F.map(([k,l])=>`<label class="f">${l}<input data-k="${k}" autocomplete="off" autocapitalize="off" spellcheck="false"></label>`).join('')}</div>
+    <div class="row"><button class="btn" id="sb">Check answers</button><span class="pen" id="pn"></span><span class="mu">Enter also checks. Blank fields are not penalized.</span></div><div id="res"></div>`;
+    const fg=$('#fg'),tm=$('#tm');
+    tick=setInterval(()=>{tm.textContent=fmt(performance.now()-t0+pen)},50);
+    fg.querySelector('input').focus();
+    fg.querySelectorAll('input').forEach(i=>i.addEventListener('input',()=>{i.parentNode.classList.remove('bad')}));
+    fg.addEventListener('keydown',e=>{if(e.key==='Enter')check()});
+    $('#sb').onclick=check;
+    function check(){
+      let bad=0;
+      fg.querySelectorAll('input:not(:disabled)').forEach(i=>{
+        if(!i.value.trim())return;
+        const l=i.parentNode;
+        if(norm(i.value)===norm(q.a[i.dataset.k])){i.disabled=true;l.className='f ok';solved++}
+        else{bad++;l.className='f bad'}
+      });
+      if(bad){pen+=PEN*bad;$('#pn').textContent='+'+pen/1000+'s penalty'}
+      if(solved===F.length)return finish();
+      const n=fg.querySelector('.bad input')||fg.querySelector('input:not(:disabled)');n&&n.focus();
+    }
+    function finish(){
+      clearInterval(tick);
+      const total=performance.now()-t0+pen,r=S.sub[tier]=S.sub[tier]||{},nb=r.best==null||total<r.best;
+      if(nb)r.best=total;r.hist=(r.hist||[]).concat(total).slice(-10);save();
+      const T=TIERS[tier],s=total/1000,rank=s<T.pro?'Subnetting pro':s<T.ok?'Solid':'Still learning';
+      tm.textContent=fmt(total);
+      $('#sb').disabled=true;
+      $('#res').innerHTML=`<div class="card"><div class="rank">${rank}</div><div>Time <b>${fmt(total)}</b>${pen?` including <span class="pen">+${pen/1000}s</span> in penalties`:''}</div>${nb?`<div class="good">New best for ${T.name}.</div>`:`<div class="mu">Best: ${fmt(r.best)}</div>`}<div class="row" style="margin-top:12px"><button class="btn" id="again">Play again</button><button class="btn ghost" id="mn">Change level</button></div></div>`;
+      $('#again').onclick=start;$('#mn').onclick=menu;$('#again').focus();
+    }
+  }
+  menu();
+  return()=>clearInterval(tick);
+}
+
+function binary(m){
+  let mode='d2b',dur=30,tick=null;
+  const root=E('div','pg');m.append(root);
+  const MN={d2b:'Decimal → Binary',b2d:'Binary → Decimal',mix:'Mixed'},DU=[30,60,120,180],dl=d=>d<60?d+'s':d/60+' min';
+  function menu(){
+    clearInterval(tick);
+    root.innerHTML=`<h1>Binary</h1><p class="mu">Answer as many 8-bit numbers as you can before time runs out. Correct answers advance automatically. Press Enter to skip, or to clear a wrong answer.</p>
+    <div class="seg" id="sm">${Object.keys(MN).map(k=>`<button data-m="${k}">${MN[k]}</button>`).join('')}</div>
+    <div class="seg" id="sd">${DU.map(d=>`<button data-d="${d}">${dl(d)}</button>`).join('')}</div>
+    <div class="card" id="info"></div><div class="row"><button class="btn big" id="go">Start</button><button class="btn big ghost" id="rvb">Review</button></div><div class="rv" id="rv" hidden>${reviewBin()}</div>`;
+    $('#rvb').onclick=toggleRv;bindBits();
+    const draw=()=>{root.querySelectorAll('[data-m]').forEach(b=>b.classList.toggle('on',b.dataset.m===mode));
+      root.querySelectorAll('[data-d]').forEach(b=>b.classList.toggle('on',+b.dataset.d===dur));
+      $('#info').innerHTML=`High score for ${MN[mode]}, ${dl(dur)}: <b>${S.bin[mode+'-'+dur]??'–'}</b>`};
+    root.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{mode=b.dataset.m;draw()});
+    root.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{dur=+b.dataset.d;draw()});
+    draw();$('#go').onclick=start;
+  }
+  function start(){
+    let score=0,miss=0,cur,over=false;const t0=performance.now();
+    root.innerHTML=`<div class="top"><div><small>${MN[mode]}</small><div class="ip" id="sc">Score 0</div></div><div class="timer" id="tm">${fmt(dur*1000)}</div></div>
+    <small class="mu" id="lb" style="display:block;text-align:center"></small><div class="q" id="qq"></div><input class="bi" id="in" autocomplete="off" inputmode="numeric" spellcheck="false"><div id="res" style="margin-top:20px"></div>`;
+    const inp=$('#in');
+    function next(){
+      const n=rnd(0,255),t=mode==='mix'?(Math.random()<.5?'d2b':'b2d'):mode;
+      cur={t,ans:t==='d2b'?n.toString(2):String(n)};
+      $('#qq').textContent=t==='d2b'?n:n.toString(2).padStart(8,'0');
+      $('#lb').textContent=t==='d2b'?'Convert to binary':'Convert to decimal';
+      inp.value='';$('#sc').textContent='Score '+score;inp.focus();
+    }
+    tick=setInterval(()=>{const left=dur*1000-(performance.now()-t0);$('#tm').textContent=fmt(left);if(left<=0)end()},100);
+    inp.addEventListener('input',()=>{
+      if(over)return;
+      const v=inp.value=inp.value.replace(cur.t==='d2b'?/[^01]/g:/\D/g,'');
+      if(!v)return;
+      const s=cur.t==='d2b'?(v.replace(/^0+/,'')||'0'):String(+v);
+      if(s===cur.ans){score++;next()}
+    });
+    inp.addEventListener('keydown',e=>{
+      if(e.key!=='Enter'||over)return;
+      if(inp.value){miss++;inp.classList.remove('shake');void inp.offsetWidth;inp.classList.add('shake');inp.value=''}
+      else next();
+    });
+    function end(){
+      over=true;clearInterval(tick);$('#tm').textContent=fmt(0);inp.disabled=true;
+      const k=mode+'-'+dur,best=S.bin[k],nb=best==null||score>best;
+      if(nb)S.bin[k]=score;save();
+      const acc=score+miss?Math.round(100*score/(score+miss)):0;
+      $('#res').innerHTML=`<div class="card"><div class="rank">${score} correct</div><div>Accuracy ${acc}% (${miss} wrong)</div>${nb?'<div class="good">New high score.</div>':`<div class="mu">High score: ${best}</div>`}<div class="row" style="margin-top:12px"><button class="btn" id="again">Play again</button><button class="btn ghost" id="mn">Change mode</button></div></div>`;
+      $('#again').onclick=start;$('#mn').onclick=menu;$('#again').focus();
+    }
+    next();
+  }
+  menu();
+  return()=>clearInterval(tick);
+}
+
+/* ---------- Router ---------- */
+const pages={home,subnet,binary};let cleanup=null;
+function route(){
+  const h=(location.hash||'#home').slice(1),p=pages[h]?h:'home';
+  if(cleanup){cleanup();cleanup=null}
+  document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.dataset.p===p));
+  const m=$('#main');m.innerHTML='';cleanup=pages[p](m)||null;
+}
+addEventListener('hashchange',route);route();
+</script>
+</body>
+</html>
