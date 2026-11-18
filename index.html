@@ -63,7 +63,8 @@ input{font:16px var(--mono);padding:8px 10px;border-radius:8px;border:1px solid 
 .rv li{margin:3px 0}
 .rv p{margin:0 0 10px}
 .rv code,.eg{font-family:var(--mono);font-size:14px;background:var(--bg);padding:1px 6px;border-radius:5px}
-.eg{display:block;padding:10px 12px;margin:0 0 12px;line-height:1.7}
+.eg{display:block;padding:10px 12px;margin:0 0 12px;line-height:1.7;white-space:pre-line}
+.ex{border-left:4px solid var(--ac);background:var(--bg);padding:8px 12px;border-radius:6px;margin:0 0 10px}
 .tw{overflow-x:auto;margin:0 0 12px}
 .bits{display:flex;gap:6px;justify-content:center;margin:12px 0}
 .bt{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;max-width:64px;padding:8px 0;border-radius:10px;border:1px solid var(--bd);background:var(--sf);color:var(--tx);cursor:pointer;font:600 14px var(--mono)}
@@ -107,6 +108,7 @@ function gen(tier){
 
 /* ---------- Review content ---------- */
 function reviewSub(){return`
+<div class="ex"><b>Example used in every section:</b> IP address <code>172.16.45.200</code> with prefix <code>/20</code>. Each section restates the values it starts from, so you can follow along.</div>
 <details open><summary>Class A, B and C at a glance</summary>
 <div class="tw"><table><tr><th>Class</th><th>First octet</th><th>Default mask</th><th>Networks</th><th>Hosts per network</th></tr>
 <tr><td>A</td><td>1 to 126</td><td>255.0.0.0 (/8)</td><td>126</td><td>16,777,214</td></tr>
@@ -116,30 +118,49 @@ function reviewSub(){return`
 <p class="mu">127.x.x.x is loopback and 224 and above is multicast or experimental, so neither appears in the quiz.</p></details>
 <details><summary>How to determine the class</summary>
 <p>Look only at the <b>first octet</b>.</p><ul><li>1 to 126: Class A</li><li>128 to 191: Class B</li><li>192 to 223: Class C</li></ul>
-<div class="eg">172.16.45.200: first octet is 172, so Class B</div>
-<p>Running example for the steps below: <code>172.16.45.200/20</code></p></details>
+<div class="ex">Example: <code>172.16.45.200</code>. The first octet is <b>172</b>. It falls between 128 and 191, so it is <b>Class B</b> (default mask /16).</div></details>
 <details><summary>Subnet mask</summary>
+<div class="ex">Example: prefix <code>/20</code> (from 172.16.45.200/20). Goal: write /20 as a mask.</div>
 <ol><li>The prefix is how many bits are 1. Split it into 8s: /20 = 8 + 8 + 4.</li><li>Every full group of 8 is <code>255</code>. Groups after the last 1 are <code>0</code>.</li><li>The leftover bits give the partial octet: 1 bit = 128, 2 = 192, 3 = 224, 4 = 240, 5 = 248, 6 = 252, 7 = 254.</li></ol>
-<div class="eg">/20 = 8 + 8 + 4, so 255.255.240.0</div></details>
+<div class="eg">/20 = 8 + 8 + 4 + 0
+1st octet: 8 ones = 255
+2nd octet: 8 ones = 255
+3rd octet: 4 ones = 11110000 = 240
+4th octet: 0 ones = 0
+Mask: 255.255.240.0</div></details>
 <details><summary>Network address</summary>
-<ol><li>Find the <b>interesting octet</b>: the one in the mask that is not 255 or 0 (here the third, 240).</li><li>Block size = 256 minus the mask value: 256 &minus; 240 = 16.</li><li>In that octet, take the largest multiple of the block size that is not above the IP value. Octets before it are copied, octets after it become 0.</li></ol>
-<div class="eg">Third octet is 45. Multiples of 16: 0, 16, 32, 48. The largest not above 45 is 32.
+<div class="ex">Example: IP <code>172.16.45.200</code>, mask <code>255.255.240.0</code> (/20). Goal: find the network address.</div>
+<ol><li>Find the <b>interesting octet</b>: the one in the mask that is not 255 or 0. In 255.255.<b>240</b>.0 that is the <b>3rd octet</b> (240).</li><li>Block size = 256 minus the mask value: 256 &minus; 240 = 16.</li><li>In that octet, take the largest multiple of the block size that is not above the IP value. Octets before it are copied, octets after it become 0.</li></ol>
+<div class="tw"><table><tr><th></th><th>1st</th><th>2nd</th><th>3rd</th><th>4th</th></tr><tr><td>IP address</td><td>172</td><td>16</td><td>45</td><td>200</td></tr><tr><td>Mask</td><td>255</td><td>255</td><td>240</td><td>0</td></tr><tr><td>Network</td><td>172</td><td>16</td><td><b>32</b></td><td>0</td></tr></table></div>
+<div class="eg">Interesting octet: the 3rd (mask 240). Block size: 256 &minus; 240 = 16.
+Multiples of 16: 0, 16, 32, 48. The IP&rsquo;s 3rd octet is 45, and the largest multiple not above 45 is 32.
+The 1st and 2nd octets are copied (172.16). The 4th becomes 0.
 Network address: 172.16.32.0</div></details>
 <details><summary>First usable host</summary>
+<div class="ex">Example: network address <code>172.16.32.0</code> (from the previous step).</div>
 <p>Network address plus 1 in the last octet.</p><div class="eg">172.16.32.0 + 1 = 172.16.32.1</div></details>
 <details><summary>Broadcast address</summary>
+<div class="ex">Example: network address <code>172.16.32.0</code>, mask <code>255.255.240.0</code>, block size 16 (from the previous steps).</div>
 <ol><li>Next network starts at network + block size in the interesting octet (32 + 16 = 48).</li><li>The broadcast is one below that: subtract 1 from the interesting octet, and set every octet after it to 255.</li></ol>
-<div class="eg">48 &minus; 1 = 47 in the third octet, then 255 for the last.
+<div class="tw"><table><tr><th></th><th>1st</th><th>2nd</th><th>3rd</th><th>4th</th></tr><tr><td>Network</td><td>172</td><td>16</td><td>32</td><td>0</td></tr><tr><td>Next network (3rd + 16)</td><td>172</td><td>16</td><td>48</td><td>0</td></tr><tr><td>Broadcast</td><td>172</td><td>16</td><td><b>47</b></td><td><b>255</b></td></tr></table></div>
+<div class="eg">Next network starts at 32 + 16 = 48 in the 3rd octet.
+Subtract 1: 48 &minus; 1 = 47. Every octet after the 3rd becomes 255.
 Broadcast: 172.16.47.255</div></details>
 <details><summary>Last usable host</summary>
+<div class="ex">Example: broadcast address <code>172.16.47.255</code> (from the previous step).</div>
 <p>Broadcast minus 1 in the last octet.</p><div class="eg">172.16.47.255 &minus; 1 = 172.16.47.254</div></details>
 <details><summary>Usable hosts per subnet</summary>
+<div class="ex">Example: prefix <code>/20</code> (from 172.16.45.200/20).</div>
 <ol><li>Host bits = 32 minus the prefix.</li><li>Usable hosts = 2<sup>host bits</sup> minus 2 (the network and broadcast addresses).</li></ol>
 <div class="eg">/20: 32 &minus; 20 = 12 host bits. 2<sup>12</sup> = 4096. 4096 &minus; 2 = 4094</div>
 <p class="mu">Powers of 2: 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536.</p></details>
 <details><summary>Subnets from the classful network</summary>
+<div class="ex">Example: 172.16.45.200 is Class B (default <code>/16</code>) and the prefix is <code>/20</code>.</div>
 <ol><li>Count how many bits you borrowed: prefix minus the class default (8, 16 or 24).</li><li>Subnets = 2<sup>borrowed bits</sup>.</li></ol>
-<div class="eg">Class B default is /16. /20 &minus; /16 = 4 borrowed bits. 2<sup>4</sup> = 16 subnets</div></details>`}
+<div class="eg">Class B default is /16. /20 &minus; /16 = 4 borrowed bits. 2<sup>4</sup> = 16 subnets</div></details>
+<details><summary>Answer sheet for the example</summary>
+<p>All ten quiz fields for <code>172.16.45.200/20</code>:</p>
+<div class="tw"><table><tr><th>Field</th><th>Answer</th></tr><tr><td>Class</td><td>B</td></tr><tr><td>Networks in this class</td><td>16384</td></tr><tr><td>Hosts per network in this class</td><td>65534</td></tr><tr><td>Subnet mask</td><td>255.255.240.0</td></tr><tr><td>Network address</td><td>172.16.32.0</td></tr><tr><td>First usable host</td><td>172.16.32.1</td></tr><tr><td>Last usable host</td><td>172.16.47.254</td></tr><tr><td>Broadcast address</td><td>172.16.47.255</td></tr><tr><td>Usable hosts per subnet</td><td>4094</td></tr><tr><td>Subnets from the classful network</td><td>16</td></tr></table></div></details>`}
 function reviewBin(){return`
 <details open><summary>The 8-bit place chart</summary>
 <p>Every bit has a fixed value, from left to right: <code>128 64 32 16 8 4 2 1</code>. Picture each bit as a finger: up is 1, down is 0. Tap the bits to try it.</p>
