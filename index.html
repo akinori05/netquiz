@@ -66,6 +66,10 @@ input{font:16px var(--mono);padding:8px 10px;border-radius:8px;border:1px solid 
 .eg{display:block;padding:10px 12px;margin:0 0 12px;line-height:1.7;white-space:pre-line}
 .ex{border-left:4px solid var(--ac);background:var(--bg);padding:8px 12px;border-radius:6px;margin:0 0 10px}
 .tw{overflow-x:auto;margin:0 0 12px}
+.term{background:#0b0f14;color:#d7e0ea;font:15px/1.7 var(--mono);border-radius:10px;padding:14px;min-height:120px}
+.tl{display:flex;gap:8px}.tl input{background:transparent;border:0;color:#fff;flex:1;padding:0;font:inherit;min-width:0}.tl input:focus-visible{outline:0}.pr{color:#7ee787;white-space:nowrap}
+.cb{background:#0b0f14;color:#d7e0ea;font:14px/1.7 var(--mono);padding:12px;border-radius:10px;white-space:pre;overflow-x:auto}
+.cl{display:block;width:100%;text-align:left;background:transparent;border:0;color:inherit;font:inherit;white-space:pre;cursor:pointer;padding:0 6px;border-radius:4px}.cl:hover{background:#243040}.cl:disabled{color:#ff7b7b;cursor:default}
 .bits{display:flex;gap:6px;justify-content:center;margin:12px 0}
 .bt{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;max-width:64px;padding:8px 0;border-radius:10px;border:1px solid var(--bd);background:var(--sf);color:var(--tx);cursor:pointer;font:600 14px var(--mono)}
 .bt b{font:700 28px/1 var(--num)}
@@ -78,7 +82,7 @@ input{font:16px var(--mono);padding:8px 10px;border-radius:8px;border:1px solid 
 </head>
 <body>
 <div class="app">
-<nav><div class="logo">Net<i>Quiz</i></div><a href="#home" data-p="home">Home</a><a href="#subnet" data-p="subnet">Subnet</a><a href="#binary" data-p="binary">Binary</a></nav>
+<nav><div class="logo">Net<i>Quiz</i></div><a href="#home" data-p="home">Home</a><a href="#subnet" data-p="subnet">Subnet</a><a href="#binary" data-p="binary">Binary</a><a href="#terminal" data-p="terminal">Terminal</a></nav>
 <main id="main"></main>
 </div>
 <script>
@@ -87,7 +91,7 @@ const E=(t,c)=>{const e=document.createElement(t);if(c)e.className=c;return e};
 const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 let S={sub:{},bin:{}};
 try{S=JSON.parse(localStorage.getItem('netquiz1'))||S}catch(e){}
-S.sub=S.sub||{};S.bin=S.bin||{};
+S.sub=S.sub||{};S.bin=S.bin||{};S.term=S.term||{};
 const save=()=>{try{localStorage.setItem('netquiz1',JSON.stringify(S))}catch(e){}};
 const fmt=ms=>{const t=Math.max(0,Math.floor(ms/100)),m=Math.floor(t/600),s=Math.floor(t%600/10);return m+':'+String(s).padStart(2,'0')+'.'+t%10};
 const norm=v=>String(v).replace(/[\s,]/g,'').toUpperCase();
@@ -192,7 +196,8 @@ function home(m){
   const bin=Object.keys(MN).map(k=>`<tr><td>${MN[k]}</td>${[30,60,120,180].map(d=>`<td>${S.bin[k+'-'+d]??'–'}</td>`).join('')}</tr>`).join('');
   r.innerHTML=`<h1>NetQuiz</h1><p class="mu">Race the clock until subnetting is reflex.</p>
   <div class="cards"><div class="card"><h2>Subnet</h2><p class="mu">Best time per full subnetting set.</p><table><tr><th>Level</th><th>Best</th></tr>${sub}</table><p></p><a class="btn" href="#subnet">Play subnet</a></div>
-  <div class="card"><h2>Binary</h2><p class="mu">Most correct answers in the time limit.</p><table><tr><th></th><th>30s</th><th>1m</th><th>2m</th><th>3m</th></tr>${bin}</table><p></p><a class="btn" href="#binary">Play binary</a></div></div>`;
+  <div class="card"><h2>Binary</h2><p class="mu">Most correct answers in the time limit.</p><table><tr><th></th><th>30s</th><th>1m</th><th>2m</th><th>3m</th></tr>${bin}</table><p></p><a class="btn" href="#binary">Play binary</a></div>
+  <div class="card"><h2>Terminal</h2><p class="mu">Rank: <b>${termRank()}</b></p><table><tr><th>Level</th><th>Best</th></tr>${termRows()}</table><p></p><a class="btn" href="#terminal">Play terminal</a></div></div>`;
   m.append(r);
 }
 
@@ -306,8 +311,114 @@ function binary(m){
   return()=>clearInterval(tick);
 }
 
+/* ---------- Terminal ---------- */
+const KW=new Set('hostname enable secret interface gigabitethernet ip address no shutdown description copy running-config startup-config write memory show brief vlan name switchport mode access trunk allowed native configure terminal exit end route router ospf network area passive-interface router-id neighbor encapsulation dot1q'.split(' '));
+const SUF={e:'#',c:'(config)#',i:'(config-if)#',v:'(config-vlan)#',r:'(config-router)#',s:'(config-subif)#'},P=(h,m)=>h+SUF[m],pick=a=>a[rnd(0,a.length-1)];
+const cmdOK=(t,c)=>{const a=t.trim().replace(/\b(g|gi|gig|gigabitethernet)(\d)/gi,'$1 $2').split(/\s+/),b=c.split(' ');return a.length===b.length&&a.every((x,i)=>KW.has(b[i])?b[i].startsWith(x.toLowerCase()):x.toLowerCase()===b[i].toLowerCase())};
+const dI=()=>{const x=rnd(0,3);return{c:'gigabitethernet 0/'+x,d:'G0/'+x}};
+const vid=()=>rnd(2,9)*10,NM4=['Sales','HR','IT','Guests'];
+const pre=q=>{const f=q.s[0].p,h=f.split(/[>#(]/)[0],r=[{p:h+'>',a:['enable']}];if(f.includes('(config'))r.push({p:h+'#',a:['configure terminal']});if(f.includes('-if'))r.push({p:P(h,'c'),a:['interface '+q.i.c]});return r};
+const rvt=r=>'<div class=\'tw\'><table><tr><th>Command</th><th>Purpose</th></tr>'+r.map(x=>`<tr><td><code>${x[0]}</code></td><td>${x[1]}</td></tr>`).join('')+'</table></div><p class=\'mu\'>Prompts: <code>&gt;</code> user, <code>#</code> privileged, <code>(config)#</code> global config, <code>(config-if)#</code> interface, <code>(config-vlan)#</code> VLAN.</p>';
+const l1=[
+()=>{const h=pick(['R1','EDGE','HQ','BR2']);return{t:'cmd',q:`Set the device name to ${h}.`,s:[{p:P('Router','c'),a:['hostname '+h]}]}},
+()=>{const d=dI();return{t:'cmd',i:d,q:`Interface ${d.d} is shut down. Enable it.`,s:[{p:P('Router','i'),a:['no shutdown']}]}},
+()=>{const g=gen('easy'),d=dI();return{t:'maze',q:`From privileged mode, give ${d.d} the address ${g.a.f} with mask ${g.a.mask}.`,s:[{p:'Router#',a:['configure terminal']},{p:P('Router','c'),a:['interface '+d.c]},{p:P('Router','i'),a:['ip address '+g.a.f+' '+g.a.mask]}]}},
+()=>({t:'cmd',q:'Save the running configuration so it survives a reboot.',s:[{p:'Router#',a:['copy running-config startup-config','write memory']}]}),
+()=>({t:'cmd',q:'Show a one-line status summary of every interface with its IP.',s:[{p:'Router#',a:['show ip interface brief']}]}),
+()=>{const u=rnd(0,3);return{t:'out',q:'Which interface needs no shutdown?',code:'Router# show ip interface brief\nInterface  IP-Address  OK? Method Status                Protocol\n'+[0,1,2,3].map(i=>`Gi0/${i}      10.0.${i}.1    YES manual ${i===u?'administratively down down':'up                    up'}`).join('\n'),o:[0,1,2,3].map(i=>'G0/'+i),a:u}},
+()=>{const g=gen('easy'),d=dI();return{t:'bug',q:`${d.d} must be UP. Click the wrong line.`,code:['interface '+d.d,` ip address ${g.a.f} ${g.a.mask}`,' shutdown'],a:2}},
+()=>{const g=gen('easy'),d=dI();return{t:'bug',q:'One line gives the interface an unusable host address. Click it.',code:['interface '+d.d,` ip address ${g.a.bc} ${g.a.mask}`,' no shutdown'],a:1}}];
+const l2=[
+()=>{const v=vid(),n=pick(NM4);return{t:'maze',q:`Create VLAN ${v} named ${n}.`,s:[{p:P('Switch','c'),a:['vlan '+v]},{p:P('Switch','v'),a:['name '+n]}]}},
+()=>{const v=vid(),d=dI();return{t:'maze',q:`Make ${d.d} an access port in VLAN ${v}.`,s:[{p:P('Switch','c'),a:['interface '+d.c]},{p:P('Switch','i'),a:['switchport mode access']},{p:P('Switch','i'),a:['switchport access vlan '+v]}]}},
+()=>{const d=dI();return{t:'cmd',i:d,q:`Make ${d.d} a trunk port.`,s:[{p:P('Switch','i'),a:['switchport mode trunk']}]}},
+()=>{const v=vid(),d=dI();return{t:'cmd',i:d,q:`On trunk ${d.d}, set the native VLAN to ${v}.`,s:[{p:P('Switch','i'),a:['switchport trunk native vlan '+v]}]}},
+()=>({t:'cmd',q:'Display VLANs and their access ports.',s:[{p:'Switch#',a:['show vlan brief']}]}),
+()=>({t:'gap',q:'Fill in the missing keyword.',code:'interface G0/1\n switchport mode ____\n switchport access vlan 20',a:['access']}),
+()=>{const ids=[10,20,30,40],pp=[0,1,2,3].sort(()=>Math.random()-.5),k=rnd(0,3);return{t:'out',q:`Which VLAN is Gi0/${pp[k]} in?`,code:'Switch# show vlan brief\nVLAN Name    Status  Ports\n'+ids.map((v,i)=>`${v}   ${NM4[i].padEnd(7)} active  Gi0/${pp[i]}`).join('\n'),o:ids.map(v=>'VLAN '+v),a:k}},
+()=>{const v=vid(),d=dI();return{t:'bug',q:`${d.d} connects a PC in VLAN ${v}. Click the wrong line.`,code:['interface '+d.d,' switchport mode trunk',' switchport access vlan '+v],a:1}},
+()=>({t:'bug',q:'HR is VLAN 30 and G0/2 is for HR. Click the wrong line.',code:['vlan 30',' name HR','interface G0/2',' switchport mode access',' switchport access vlan 20'],a:4}),
+()=>{const v=vid(),n=pick(NM4),d=dI();return{t:'hero',q:`Build it: VLAN ${v} named ${n}, then make ${d.d} an access port in it.`,s:[{p:P('Switch','c'),a:['vlan '+v]},{p:P('Switch','v'),a:['name '+n]},{p:P('Switch','v'),a:['exit']},{p:P('Switch','c'),a:['interface '+d.c]},{p:P('Switch','i'),a:['switchport mode access']},{p:P('Switch','i'),a:['switchport access vlan '+v]}]}}];
+const nt=()=>`10.${rnd(1,200)}.${rnd(1,200)}.0`,nh=()=>`192.168.${rnd(1,200)}.${rnd(2,254)}`,C3=P('Router','c');
+const l3=[
+()=>{const n=nt(),h=nh();return{t:'cmd',q:`Add a static route to ${n} 255.255.255.0 via next hop ${h}.`,s:[{p:C3,a:[`ip route ${n} 255.255.255.0 ${h}`]}]}},
+()=>{const h=nh();return{t:'cmd',q:`Add a default route via next hop ${h}.`,s:[{p:C3,a:[`ip route 0.0.0.0 0.0.0.0 ${h}`]}]}},
+()=>{const n=nt();return{t:'maze',q:`Enable OSPF process 1 and advertise ${n} (wildcard 0.0.0.255) in area 0.`,s:[{p:C3,a:['router ospf 1']},{p:P('Router','r'),a:[`network ${n} 0.0.0.255 area 0`]}]}},
+()=>{const d=dI();return{t:'maze',q:`In OSPF process 1, make ${d.d} passive so it sends no hellos.`,s:[{p:C3,a:['router ospf 1']},{p:P('Router','r'),a:['passive-interface '+d.c]}]}},
+()=>{const v=vid(),g=`192.168.${v}.1`;return{t:'maze',q:`Router-on-a-stick: create subinterface G0/0.${v} for VLAN ${v} with address ${g} 255.255.255.0.`,s:[{p:C3,a:[`interface gigabitethernet 0/0.${v}`]},{p:P('Router','s'),a:['encapsulation dot1q '+v]},{p:P('Router','s'),a:[`ip address ${g} 255.255.255.0`]}]}},
+()=>({t:'cmd',q:'Show the routing table.',s:[{p:'Router#',a:['show ip route']}]}),
+()=>({t:'cmd',q:'Show the OSPF neighbors.',s:[{p:'Router#',a:['show ip ospf neighbor']}]}),
+()=>({t:'gap',q:'Fill in the missing value (default route).',code:'ip route 0.0.0.0 ____ 192.168.1.2',a:['0.0.0.0']}),
+()=>({t:'gap',q:'Fill in the missing OSPF area.',code:'router ospf 1\n network 10.1.1.0 0.0.0.255 area ____',a:['0']}),
+()=>{const x=[nt(),nt(),'0.0.0.0'],hh=[nh(),nh(),nh()],k=rnd(0,2);return{t:'out',q:`Which next hop does the router use for ${k===2?'unknown destinations (the default route)':x[k]+'/24'}?`,code:`Router# show ip route\nS    ${x[0]}/24 [1/0] via ${hh[0]}\nO    ${x[1]}/24 [110/2] via ${hh[1]}, GigabitEthernet0/1\nS*   0.0.0.0/0 [1/0] via ${hh[2]}`,o:hh,a:k}},
+()=>({t:'bug',q:'OSPF network statements use a wildcard mask. Click the wrong line.',code:['router ospf 1',` network ${nt()} 255.255.255.0 area 0`],a:1}),
+()=>({t:'bug',q:'One static route has the wrong mask for a default route. Click it.',code:['ip route 10.2.2.0 255.255.255.0 192.168.1.2','ip route 0.0.0.0 255.255.255.255 192.168.1.2','ip route 10.3.3.0 255.255.255.0 192.168.1.3'],a:1}),
+()=>({t:'bug',q:'Subinterface G0/0.20 must serve VLAN 20. Click the wrong line.',code:['interface GigabitEthernet0/0.20',' encapsulation dot1q 30',' ip address 192.168.20.1 255.255.255.0'],a:1}),
+()=>{const d=dI(),x=rnd(1,9),n=nt(),r=`${x}.${x}.${x}.${x}`;return{t:'hero',q:`Build OSPF 1 in this order: router-id ${r}, advertise ${n} (wildcard 0.0.0.255) in area 0, then make ${d.d} passive.`,s:[{p:C3,a:['router ospf 1']},{p:P('Router','r'),a:['router-id '+r]},{p:P('Router','r'),a:[`network ${n} 0.0.0.255 area 0`]},{p:P('Router','r'),a:['passive-interface '+d.c]}]}}];
+const LV=[
+{id:'l1',n:'Basic',r:'Rookie',g:l1,m:[100,170],rv:rvt([['hostname R1','Name the device'],['interface g0/1','Enter interface mode'],['ip address 10.0.0.1 255.255.255.0','Set IP and mask'],['no shutdown','Turn the interface on'],['copy running-config startup-config','Save (or write memory)'],['show ip interface brief','Interface status summary']])},
+{id:'l2',n:'Switching',r:'Switch Tech',g:l2,m:[140,230],rv:rvt([['vlan 20','Create a VLAN'],['name Sales','Name it (in config-vlan)'],['switchport mode access','Port for one device'],['switchport access vlan 20','Put the port in VLAN 20'],['switchport mode trunk','Carry many VLANs'],['switchport trunk native vlan 99','Set native VLAN'],['show vlan brief','VLANs and access ports']])},
+{id:'l3',n:'Routing',r:'Route Master',g:l3,rv:rvt([['ip route 10.2.0.0 255.255.255.0 192.168.1.2','Static route (network, mask, next hop)'],['ip route 0.0.0.0 0.0.0.0 192.168.1.2','Default route'],['router ospf 1','Start OSPF process 1'],['network 10.1.1.0 0.0.0.255 area 0','Advertise a network (wildcard mask)'],['router-id 1.1.1.1','Set the OSPF router ID'],['passive-interface g0/1','No OSPF hellos out this interface'],['interface g0/0.10 + encapsulation dot1q 10','Router-on-a-stick subinterface'],['show ip route','Routing table'],['show ip ospf neighbor','OSPF neighbors']])},{n:'IP Services',r:'Services Pro'},{n:'IPv6',r:'v6 Specialist'},{n:'Security',r:'Guardian'},{n:'Pro: Troubleshooting',r:'Troubleshooter'},{n:'Hero: Full Builds',r:'Network Hero'}];
+const clr=l=>[3,5,10].some(d=>(S.term[l.id+'-'+d]||0)>=5);
+const termRank=()=>{const c=LV.filter(l=>l.g&&clr(l));return c.length?c[c.length-1].r:'Unranked'};
+const termRows=()=>LV.map(l=>`<tr><td>${l.n}</td><td>${l.g?[3,5,10].map(d=>d+'m: '+(S.term[l.id+'-'+d]??'–')).join(' · '):'Soon'}</td></tr>`).join('');
+
+function terminal(m){
+  let tick=null;const root=E('div','pg');m.append(root);
+  function menu(){
+    clearInterval(tick);
+    root.innerHTML=`<h1>Terminal</h1><p class='mu'>Pick a time per level and answer as many questions as you can before it runs out. Every question starts in user EXEC mode (<code>Router&gt;</code>), so type <code>enable</code> first. Each wrong attempt takes 5 seconds off the clock. Abbreviations like <code>int g0/1</code> work. Score 5 or more in a run to clear a level and earn its rank. Current rank: <b>${termRank()}</b></p><div id='lv'></div>`;
+    LV.forEach((l,i)=>{const c=E('div','card');let d=3;
+      c.innerHTML=l.g?`<h2>${i+1}. ${l.n}</h2><div class='seg' style='margin:8px 0'>${[3,5,10].map(x=>`<button data-d='${x}'>${x} min</button>`).join('')}</div><div class='mu' data-b></div><div class='row' style='margin:10px 0 0'><button class='btn' data-s>Start</button><button class='btn ghost' data-r>Review</button></div><div hidden style='margin-top:12px'>${l.rv}</div>`:`<h2>${i+1}. ${l.n}</h2><div class='mu'>Coming soon</div>`;
+      $('#lv').append(c);
+      if(l.g){const up=()=>{c.querySelectorAll('[data-d]').forEach(x=>x.classList.toggle('on',+x.dataset.d===d));c.querySelector('[data-b]').textContent='Best at '+d+' min: '+(S.term[l.id+'-'+d]??'–')+(clr(l)?' answered. Cleared: '+l.r:' answered. Score 5+ to clear.')};c.querySelectorAll('[data-d]').forEach(x=>x.onclick=()=>{d=+x.dataset.d;up()});up();c.querySelector('[data-s]').onclick=()=>run(l,d);c.querySelector('[data-r]').onclick=()=>{const r=c.querySelector('[hidden],div:last-child');r.hidden=!r.hidden}}});
+  }
+  function run(l,min){
+    let qi=0,si=0,pen=0,miss=0,wr=0,lg=-1;const t0=performance.now(),tot=min*60000,hist=[];
+    const gq=()=>{let k;do{k=rnd(0,l.g.length-1)}while(k===lg&&l.g.length>1);lg=k;const q=l.g[k]();if(q.s&&!q.pp){q.s=[...pre(q),...q.s];q.pp=1}return q};
+    root.innerHTML=`<div class='top'><div><small>${l.n}</small><div class='ip' id='qn'></div></div><div class='timer' id='tm'>0:00.0</div></div><div id='qb'></div><div class='row'><span class='pen' id='pn'></span></div>`;
+    tick=setInterval(()=>{const left=tot-(performance.now()-t0)-pen;$('#tm').textContent=fmt(left);if(left<=0)end()},50);
+    const bad=el=>{wr++;pen+=PEN;$('#pn').textContent='+'+pen/1000+'s penalty';if(el){el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake')}};
+    const adv=()=>{qi++;show()};
+    function show(){
+      const q=gq();si=0;miss=0;$('#qn').textContent='Answered: '+qi;
+      $('#qb').innerHTML=`<div class='card'><b>${q.q}</b></div><div id='qa'></div>`;const a=$('#qa');
+      if(q.s)steps(q,a);else if(q.t==='gap')gap(q,a);else if(q.t==='out')choice(q,a);else bug(q,a);
+    }
+    function steps(q,a){
+      a.innerHTML=`<div class='term' id='tl'></div><div class='mu' id='ht' style='margin-top:8px'></div>`;
+      const row=()=>{const s=q.s[si],r=E('div','tl');r.innerHTML=`<span class='pr'>${s.p}</span><input autocomplete='off' autocapitalize='off' spellcheck='false' aria-label='command'>`;$('#tl').append(r);const i=r.querySelector('input');i.focus();$('#ht').textContent='';miss=0;
+        i.onkeydown=e=>{if(e.key!=='Enter')return;const v=i.value.trim();if(!v)return;
+          if(s.a.some(c=>cmdOK(v,c))){i.disabled=true;si++;si>=q.s.length?adv():row()}
+          else{miss++;bad(i);i.select();if(miss>=2)$('#ht').textContent='Hint: '+s.a[0]}}};
+      row();
+    }
+    function gap(q,a){
+      a.innerHTML=`<div class='cb'>${q.code}</div><div class='row' style='margin-top:12px'><input id='gi' autocomplete='off' spellcheck='false' aria-label='missing value' style='max-width:260px'><button class='btn' id='gb'>Check</button></div>`;
+      const go=()=>{const v=$('#gi').value.trim().toLowerCase();if(!v)return;q.a.some(x=>x.toLowerCase()===v)?adv():bad($('#gi'))};
+      $('#gb').onclick=go;$('#gi').onkeydown=e=>{if(e.key==='Enter')go()};$('#gi').focus();
+    }
+    function choice(q,a){
+      a.innerHTML=`<div class='cb'>${q.code}</div><div class='seg' style='margin-top:12px'></div>`;
+      q.o.forEach((o,i)=>{const b=E('button');b.textContent=o;b.onclick=()=>{if(i===q.a)adv();else{bad(b);b.disabled=true}};a.querySelector('.seg').append(b)});
+    }
+    function bug(q,a){
+      a.innerHTML=`<div class='cb'></div>`;
+      q.code.forEach((t,i)=>{const b=E('button','cl');b.textContent=t;b.onclick=()=>{if(i===q.a)adv();else{bad(b);b.disabled=true}};a.firstChild.append(b)});
+    }
+    function end(){
+      clearInterval(tick);const k=l.id+'-'+min,old=S.term[k],nb=old==null||qi>old;if(nb)S.term[k]=qi;save();$('#tm').textContent=fmt(0);
+      $('#qb').innerHTML=`<div class='card'><div class='rank'>Time is up</div><div><b>${qi}</b> answered in ${min} min · ${wr} wrong attempts</div>${nb?`<div class='good'>New best.</div>`:`<div class='mu'>Best: ${old}</div>`}${clr(l)?`<div class='good'>Level cleared. Rank: ${l.r}</div>`:`<div class='mu'>Score 5 or more to clear this level.</div>`}<div class='row' style='margin-top:12px'><button class='btn' id='ag'>Play again</button><button class='btn ghost' id='mn'>Levels</button></div></div>`;
+      $('#ag').onclick=()=>run(l,min);$('#mn').onclick=menu;$('#ag').focus();
+    }
+    show();
+  }
+  menu();
+  return()=>clearInterval(tick);
+}
+
 /* ---------- Router ---------- */
-const pages={home,subnet,binary};let cleanup=null;
+const pages={home,subnet,binary,terminal};let cleanup=null;
 function route(){
   const h=(location.hash||'#home').slice(1),p=pages[h]?h:'home';
   if(cleanup){cleanup();cleanup=null}
