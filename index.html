@@ -82,7 +82,7 @@ input{font:16px var(--mono);padding:8px 10px;border-radius:8px;border:1px solid 
 </head>
 <body>
 <div class="app">
-<nav><div class="logo">Net<i>Quiz</i></div><a href="#home" data-p="home">Home</a><a href="#subnet" data-p="subnet">Subnet</a><a href="#binary" data-p="binary">Binary</a><a href="#terminal" data-p="terminal">Terminal</a></nav>
+<nav><div class="logo">Net<i>Quiz</i></div><a href="#home" data-p="home">Home</a><a href="#subnet" data-p="subnet">Subnet</a><a href="#binary" data-p="binary">Binary</a><a href="#terminal" data-p="terminal">Terminal</a><a href="#numbers" data-p="numbers">Numbers</a></nav>
 <main id="main"></main>
 </div>
 <script>
@@ -91,7 +91,7 @@ const E=(t,c)=>{const e=document.createElement(t);if(c)e.className=c;return e};
 const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 let S={sub:{},bin:{}};
 try{S=JSON.parse(localStorage.getItem('netquiz1'))||S}catch(e){}
-S.sub=S.sub||{};S.bin=S.bin||{};S.term=S.term||{};
+S.sub=S.sub||{};S.bin=S.bin||{};S.term=S.term||{};S.num=S.num||{};
 const save=()=>{try{localStorage.setItem('netquiz1',JSON.stringify(S))}catch(e){}};
 const fmt=ms=>{const t=Math.max(0,Math.floor(ms/100)),m=Math.floor(t/600),s=Math.floor(t%600/10);return m+':'+String(s).padStart(2,'0')+'.'+t%10};
 const norm=v=>String(v).replace(/[\s,]/g,'').toUpperCase();
@@ -197,7 +197,8 @@ function home(m){
   r.innerHTML=`<h1>NetQuiz</h1><p class="mu">Race the clock until subnetting is reflex.</p>
   <div class="cards"><div class="card"><h2>Subnet</h2><p class="mu">Best time per full subnetting set.</p><table><tr><th>Level</th><th>Best</th></tr>${sub}</table><p></p><a class="btn" href="#subnet">Play subnet</a></div>
   <div class="card"><h2>Binary</h2><p class="mu">Most correct answers in the time limit.</p><table><tr><th></th><th>30s</th><th>1m</th><th>2m</th><th>3m</th></tr>${bin}</table><p></p><a class="btn" href="#binary">Play binary</a></div>
-  <div class="card"><h2>Terminal</h2><p class="mu">Rank: <b>${termRank()}</b></p><table><tr><th>Level</th><th>Best</th></tr>${termRows()}</table><p></p><a class="btn" href="#terminal">Play terminal</a></div></div>`;
+  <div class="card"><h2>Terminal</h2><p class="mu">Rank: <b>${termRank()}</b></p><table><tr><th>Level</th><th>Best</th></tr>${termRows()}</table><p></p><a class="btn" href="#terminal">Play terminal</a></div>
+  <div class="card"><h2>Numbers</h2><p class="mu">Chart flash-drill. Best answered per run.</p><table><tr><th>Time</th><th>Best</th></tr>${[1,3,5].map(d=>`<tr><td>${d} min</td><td>${S.num['m'+d]??'–'}</td></tr>`).join('')}</table><p></p><a class="btn" href="#numbers">Play numbers</a></div></div>`;
   m.append(r);
 }
 
@@ -417,8 +418,53 @@ function terminal(m){
   return()=>clearInterval(tick);
 }
 
+/* ---------- Numbers ---------- */
+const NR=[['Slash',['/25','/26','/27','/28','/29','/30','/31','/32']],['Mask',[128,192,224,240,248,252,254,255]],['Block size',[128,64,32,16,8,4,2,1]],['Wildcard',[127,63,31,15,7,3,1,0]],['Usable hosts',[126,62,30,14,6,2,'2*','1*']],['Subnets (/24)',[2,4,8,16,32,64,128,256]]];
+const chartHTML=()=>`<div class='tw'><table>${NR.map(r=>`<tr><th>${r[0]}</th>${r[1].map(v=>`<td>${v}</td>`).join('')}</tr>`).join('')}</table></div><p class='mu'>* /31 is for point-to-point links and /32 is a single host. Block size doubles each step up, mask = 256 minus block size, wildcard = block size minus 1, usable hosts = block size minus 2.</p>`;
+function nq(){
+  const V=r=>NR[r][1],L=r=>NR[r][0],num=[1,2,3,5],sh=a=>a.sort(()=>Math.random()-.5);
+  const mk=(r,c)=>{const n=r===4?6:8,p=[];for(let d=-3;d<=3;d++)if(d&&c+d>=0&&c+d<n)p.push(c+d);return sh([c,...sh(p).slice(0,2)]).map(x=>V(r)[x])};
+  const t=rnd(0,3);
+  if(t<2){const c=rnd(0,7);return{q:`${V(0)[c]} = ?`,o:mk(1,c),a:V(1)[c]}}
+  const r=t===2?1:2;
+  {const af=Math.random()<.5,c=af?rnd(0,6):rnd(1,7),tc=af?c+1:c-1;return{q:`${L(r)}: what comes ${af?'after':'before'} ${V(r)[c]}?`,o:mk(r,tc),a:V(r)[tc]}}
+}
+function numbers(m){
+  let tick=null,btns=[];const root=E('div','pg');m.append(root);
+  const kh=e=>{const b=btns[+e.key-1];if(b&&!b.disabled)b.click()};
+  document.addEventListener('keydown',kh);
+  function menu(){
+    clearInterval(tick);btns=[];let d=3;
+    root.innerHTML=`<h1>Numbers</h1><p class='mu'>Memorize the chart: see a slash and know its mask, and know what comes before and after in the mask and block size rows. Answer as many as you can before time runs out. Press 1, 2 or 3 to pick a choice. A wrong answer takes 5 seconds off the clock.</p><div class='seg'>${[1,3,5].map(x=>`<button data-d='${x}'>${x} min</button>`).join('')}</div><div class='card' id='info'></div><div class='row'><button class='btn big' id='go'>Start</button><button class='btn big ghost' id='rvb'>Review chart</button></div><div id='rv' hidden>${chartHTML()}</div>`;
+    const up=()=>{root.querySelectorAll('[data-d]').forEach(x=>x.classList.toggle('on',+x.dataset.d===d));$('#info').innerHTML=`Best at ${d} min: <b>${S.num['m'+d]??'–'}</b> answered`};
+    root.querySelectorAll('[data-d]').forEach(x=>x.onclick=()=>{d=+x.dataset.d;up()});up();
+    $('#rvb').onclick=()=>{const r=$('#rv');r.hidden=!r.hidden;$('#rvb').textContent=r.hidden?'Review chart':'Hide chart'};
+    $('#go').onclick=()=>run(d);
+  }
+  function run(min){
+    let n=0,wr=0,pen=0;const t0=performance.now(),tot=min*60000;
+    root.innerHTML=`<div class='top'><div><small>Numbers</small><div class='ip' id='qn'>Answered: 0</div></div><div class='timer' id='tm'></div></div><div class='card' style='text-align:center'><div class='q' id='qq' style='font-size:clamp(28px,7vw,52px)'></div></div><div id='ob' style='display:flex;gap:10px;flex-wrap:wrap;justify-content:center'></div><div class='row' style='margin-top:12px'><span class='pen' id='pn'></span></div>`;
+    tick=setInterval(()=>{const left=tot-(performance.now()-t0)-pen;$('#tm').textContent=fmt(left);if(left<=0)end()},50);
+    function nx(){
+      const q=nq();$('#qn').textContent='Answered: '+n;$('#qq').textContent=q.q;$('#ob').innerHTML='';
+      btns=q.o.map((o,i)=>{const b=E('button','btn ghost');b.style.cssText='font-size:24px;min-width:110px';b.textContent=(i+1)+'. '+o;
+        b.onclick=()=>{if(o===q.a){n++;nx()}else{wr++;pen+=PEN;b.disabled=true;$('#pn').textContent='+'+pen/1000+'s penalty';b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake')}};
+        $('#ob').append(b);return b});
+    }
+    function end(){
+      clearInterval(tick);btns=[];$('#tm').textContent=fmt(0);
+      const k='m'+min,old=S.num[k],nb=old==null||n>old;if(nb)S.num[k]=n;save();
+      root.innerHTML=`<div class='top'><div><small>Numbers</small><div class='ip'>Time is up</div></div><div class='timer'>${fmt(0)}</div></div><div class='card'><div class='rank'>${n} answered</div><div>${min} min · ${wr} wrong attempts</div>${nb?`<div class='good'>New best.</div>`:`<div class='mu'>Best: ${old}</div>`}<div class='row' style='margin-top:12px'><button class='btn' id='ag'>Play again</button><button class='btn ghost' id='mn'>Menu</button></div></div>`;
+      $('#ag').onclick=()=>run(min);$('#mn').onclick=menu;$('#ag').focus();
+    }
+    nx();
+  }
+  menu();
+  return()=>{clearInterval(tick);document.removeEventListener('keydown',kh)};
+}
+
 /* ---------- Router ---------- */
-const pages={home,subnet,binary,terminal};let cleanup=null;
+const pages={home,subnet,binary,terminal,numbers};let cleanup=null;
 function route(){
   const h=(location.hash||'#home').slice(1),p=pages[h]?h:'home';
   if(cleanup){cleanup();cleanup=null}
